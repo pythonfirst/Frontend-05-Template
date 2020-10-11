@@ -59,7 +59,9 @@
         })
       }
 
-      function go() {
+
+      // promise version
+      function go_promise() {
         green()
         sleep(10000)
         .then(() => {
@@ -72,7 +74,19 @@
         })
         .then(go)
       }
-      go()
+
+      // async version
+      async function go_async() {
+        while (true) {
+          green()
+          await sleep(10000)
+          yellow()
+          await sleep(2000)
+          red()
+          await sleep(5000)
+        }
+      }
+      go_async()
     </script>
   </body>
 </html>
