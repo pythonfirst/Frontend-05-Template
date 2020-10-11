@@ -23,9 +23,9 @@
     <script>
       /* 2：叉；0: 空, 1: 圈*/
       let pattern = [
-        0, 0, 0,
-        0, 0, 0,
-        0, 0, 0
+        [0, 0, 0],
+        [0, 0, 0],
+        [0, 0, 0]
       ]
        
       let color = 1  // 默认为⭕
@@ -38,8 +38,8 @@
             let cell = document.createElement('div')
             cell.classList.add('cell')
             cell.innerText = 
-              pattern[i*3 + j] === 2 ? '❌' :
-              pattern[i*3 + j] === 1 ? '⭕' : ''
+              pattern[i][j] === 2 ? '❌' :
+              pattern[i][j] === 1 ? '⭕' : ''
             
             cell.addEventListener('click', () => move(pattern, i,j))
             board.appendChild(cell)
@@ -50,7 +50,7 @@
       }
       // 走棋
       function move(pattern, x, y) {
-        pattern[x*3 + y] = color
+        pattern[x][y] = color
         if (check(pattern, color)) {
           // setTimeout(() => {
           alert(color === 1 ? ' ⭕is winner' : '❌ is winner')
@@ -88,7 +88,7 @@
         for (let i=0; i<3; i++) {
           let win = true
           for (let j=0; j<3; j++) {
-            if(pattern[i*3 + j] !== color) {
+            if(pattern[i][j] !== color) {
               win = false
             }
           }
@@ -101,7 +101,7 @@
         for (j=0; j<3; j++ ) {
           let win = true
           for (i=0; i<3; i++) {
-            if (pattern[i*3 + j] !== color) {
+            if (pattern[i][j] !== color) {
               win = false
             }
           }
@@ -138,17 +138,17 @@
       }
       
       function clone(pattern) {
-        // return JSON.parse(JSON.stringify(pattern))
-        return Object.create(pattern)
+        return JSON.parse(JSON.stringify(pattern))
+        // return Object.create(pattern)
       }
       
       // 判断己方是否会赢
       function willWin(pattern, color) {
         for(let i=0; i<3; i++) {
           for (let j=0; j<3; j++) {
-            if (pattern[i*3 + j] === 0) {
+            if (pattern[i][j] === 0) {
               let temp = clone(pattern)
-              temp[i*3 + j] = color
+              temp[i][j] = color
               if (check(temp, color)) {
                 return [i, j]
               }
@@ -175,11 +175,11 @@
         let point = null
         outer: for (let i=0; i<3; i++) { 
           for (let j=0; j<3; j++) {
-            if (pattern[i*3 + j]) {
+            if (pattern[i][j]) {
               continue
             }
             let temp = clone(pattern)
-            temp[i*3 + j] = color
+            temp[i][j] = color
             let r = bestChoice(temp, 3-color).result
             if (-r > result) {
               result = -r
