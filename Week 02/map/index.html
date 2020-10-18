@@ -23,7 +23,7 @@
       // 创建一个排序数据解构
       class Sort {
         constructor(data, compare) {
-          this.data = data.slice()  // 这里为什么要用slice
+          this.data = data.slice() // 这里为什么要用slice
           this.compare = compare || ((a, b) => a-b)  // 这里的箭头函数为什么要用小括号包裹起来。
         }
         take() {
