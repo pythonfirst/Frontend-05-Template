@@ -72,7 +72,7 @@
           red()
           return sleep(5000)
         })
-        .then(go)
+        .then(go_promise)
       }
 
       // async version
@@ -86,7 +86,8 @@
           await sleep(5000)
         }
       }
-      go_async()
+      // go_async()
+      go_promise()
     </script>
   </body>
 </html>
