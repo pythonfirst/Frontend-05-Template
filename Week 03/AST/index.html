@@ -39,7 +39,7 @@
       }
 
       let source = [] 
-      for (token of tokenize('10 * 25 / 2')) {
+      for (token of tokenize('1 + 2 + 3 - 8 + 2 * 5')) {
         if (token.type !=='whitespace' && token.type !== 'lineterminator') {
           source.push(token)
         }
@@ -49,7 +49,47 @@
 
       }
       function AdditiveExpression(source) {
-
+        if (source[0].type === 'multiplicative') {
+          let node = {
+            type: 'additive',
+            children: [source[0]]
+          }
+          source[0] = node
+          return AdditiveExpression(source)
+        }
+        if (source[0].type === 'additive' && source[1] && source[1].type === '+' ) {
+          let node = {
+            type: 'additive',
+            operator: '+',
+            children: []
+          }
+          node.children.push(source.shift())
+          node.children.push(source.shift())
+          MultiplicativeExrpression(source)
+          node.children.push(source.shift())
+          source.unshift(node)
+          return AdditiveExpression(source)
+        }
+        if (source[0].type === 'additive' && source[1] && source[1].type === '-' ) {
+          let node = {
+            type: 'additive',
+            operator: '-',
+            children: []
+          }
+          node.children.push(source.shift())
+          node.children.push(source.shift())
+          MultiplicativeExrpression(source)
+          node.children.push(source.shift())
+          source.unshift(node)
+          return AdditiveExpression(source)
+        }
+        // 递归退出条件
+        if (source[0].type === 'additive') {
+          return source[0]
+        }
+        // 刚进入时，先进行multipli逻辑处理。
+        MultiplicativeExrpression(source)
+        return AdditiveExpression(source)
       }
       function MultiplicativeExrpression(source) {
         // 如果为数字
@@ -97,7 +137,7 @@
           return source[0]
         }
       }
-      console.log(MultiplicativeExrpression(source))
+      console.log('additive', AdditiveExpression(source))
     </script>
   </body>
 </html>
