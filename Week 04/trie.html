@@ -1,0 +1,92 @@
+<html>
+  <head>
+
+  </head>
+  <body>
+    <script>
+      // let $ = Symbol('$')  // 为什么要用Symbol,用了Symbol的什么特性 另外为什么要将变量定义在class外面
+      class Trie {
+        constructor() {
+          this.root = Object.create(null)  // 字典树根节点
+          this.$ = Symbol('$')  // $变量定义在这里死否可行？
+        }
+        /*
+        字符串插入方法
+        */
+        insert(word) {
+          let node = this.root
+          for (let letter of word) {
+            // 如果不存在此节点，则新创建
+            if (!node[letter]) {
+              node[letter] = Object.create(null)
+            }
+            node = node[letter]
+          }
+
+          // 
+          if (!node[this.$]) {
+            node[this.$] = 0
+          }
+          node[this.$]++
+        }
+        /*
+        这里写递归，重要的是要找出最小重复单元，然后递归执行此单元。
+        这里递归结束条件是什么？字典树中没有可遍历元素
+        for...of 对node[$]不执行？,是的Symbol不会被遍历
+        for...in与递归结合的典范
+        目的是递归的路线（找到每个单词，而非最后的结果）
+        */
+        most() {
+          let max = 0
+          let maxWord = null
+          let visit = (node, word) => {
+            if (node[this.$] && node[this.$] > max) {
+              max = node[this.$]
+              maxWord = word
+            }
+
+            for (let l in node) {
+              // console.log('l', l)
+              if (l === this.$) console.log(l)
+              visit(node[l], word+l)
+            }
+          }
+          visit(this.root, '')
+          console.log(maxWord, max)
+        }
+      }
+
+      /*
+      生成指定长度随机字符串
+      */
+      function generateRandomString(length) {
+        let word = ""
+        for (let i=0; i<length; i++) {
+          word += String.fromCharCode(Math.random()*26 + 'a'.charCodeAt(0))
+        }
+        return word
+      }
+
+      let trie = new Trie()
+
+      for (let i=0; i<100000; i++) {
+        trie.insert(generateRandomString(4))
+      }
+      trie.most()
+      
+
+      let z = Symbol('$')
+      let ob = {
+        p: 5,
+        x: 5,
+        i: 9,
+        z: 8
+      }
+      console.log('z', z)
+      ob[z] = 5
+      for (let item in ob) {
+        console.log(item, ob[item])
+      }
+    </script>
+  </body>
+</html>
