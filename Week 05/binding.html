@@ -1,0 +1,110 @@
+<html>
+  <head></head>
+  <body>
+    <input type="range" id="r" min="0" max="255">
+    <input type="range" id="g" min="0" max="255">
+    <input type="range" id="b" min="0" max="255">
+    <div id="color" style="width: 100px; height: 100px;"></div>
+    <script>
+      let callbacks = new Map()
+      
+      let reactivities = new Map()
+
+      let usdReactivities = []  // 缓存所有用过的reactive
+
+      let effect = function(callback) {
+        usdReactivities = []
+        callback()
+        // 判断当前reactive的callback是否已经注册 =>自己思路
+        // for (reactive of usdReactivities) {
+        //   if (callbacks.has(reactive[0])) {
+        //     if (callbacks.get(reactive[0].get(reactive[1]))) {
+        //       callbacks.get(reactive[0].get(reactive[1])).push(callback)
+        //     } else {
+        //       callbacks.get(reactive[0].set(reactive[1], [callback]))
+        //     }
+        //   } else {
+        //     callback.set(reactive[0], new Set()).get(reactive[0]).set(reactive[1], [callback])
+        //   }
+        // }
+
+        // 判断当前reactive的callback是否已经注册 =>winter老师思路更简洁
+        for (let reactive of usdReactivities) { // 忘记使用let，并且reactive与下面函数reactive命名相同，导致函数reactive被覆盖
+          // 如果obj属性不存在，则新创建一个
+          if (!callbacks.get(reactive[0])) {
+            callbacks.set(reactive[0], new Map())
+          }
+          // 如果prop不存在，则新创建一个
+          if (!callbacks.get(reactive[0]).get(reactive[1])) {
+            callbacks.get(reactive[0]).set(reactive[1], [])
+          }
+          // 统一对callback进行push
+          callbacks.get(reactive[0]).get(reactive[1]).push(callback)
+        }
+      }
+
+      let reactive = function(obj) {
+
+        if (reactivities.get(obj)) {
+          return reactivities.get(obj)
+        }
+
+        let proxy = new Proxy(obj, {
+          get: function(obj, prop) {
+            // console.log(obj, prop)
+            usdReactivities.push([obj, prop])
+            // 支持嵌套的obj
+            if (typeof obj[prop] === 'object') {
+              return reactive(obj[prop]);
+            }
+            return obj[prop]
+          },
+          set: function(obj, prop, value) {
+            console.log(obj, prop, value)
+            obj[prop] = value
+            // for (let callback of callbacks) {
+            //   callback()
+            // }
+            // 查找此obj的prop的callback,如果有则执行
+            // if (callbacks.get(obj).get(prop)) {   // callbacks.get(obj)如果不存在则报错  ==>我的思路
+            if (callbacks.get(obj) && callbacks.get(obj).get(prop)) {   // 改进思路，接近于老师。 
+              callbacks.get(obj).get(prop).forEach(callback => callback())
+            }
+            return obj[prop]
+          }
+        })
+
+        reactivities.set(obj, proxy)
+
+        return proxy
+      }
+
+      let object = {
+        r: 0,
+        g: 0,
+        b: 0
+      }
+      let po = reactive (object)
+      effect(() => {
+        document.getElementById('r').value = po.r
+        document.getElementById('g').value = po.g
+        document.getElementById('b').value = po.b
+      })
+      document.getElementById('r').addEventListener('input', event => {
+        po.r = event.target.value
+      })
+      document.getElementById('g').addEventListener('input', event => {
+        po.g = event.target.value
+      })
+      document.getElementById('b').addEventListener('input', event => {
+        po.b = event.target.value
+      })
+
+      effect(() => {
+        document.getElementById('color').style.backgroundColor = `rgb(${po.r}, ${po.g}, ${po.b})`
+      })
+
+
+    </script>  
+  </body>
+</html>
