@@ -1,0 +1,57 @@
+<html>
+  <head>
+
+  </head>
+  <body>
+    
+    <script>
+      /**
+       * 方法1
+       * 通过charCodeAt()拿到字符的UTF-16码点,按照UTF-8的编码
+       * 规则转换为相对应字节。
+       */
+      function UTF8_Encoding(str) {
+        let buffer = []
+        for (let i of str) {
+          let code = i.charCodeAt() // 获取字符UTF-16码点
+          // 按照补码规则进行补码
+          if (code>=0 && code<=0x7F) {
+            buffer.push('0'+ code.toString(2))
+          } else if (code > 0x7F && code <=0x7FF) {
+            let by = code.toString(2).padStart(16, 0)
+            buffer.push([['110'+by.slice(0,5)], ['10'+ by.slice(5)]])
+          } else if (code>0x7FF && code<=0xFFFF) {
+            let by = code.toString(2).padStart(16, 0)
+            buffer.push([['1110'+ by.slice(0,4)],['10'+by.slice(4,10)],['10'+ by.slice(10)]])
+          } else if (code>0xFFFF && code<=0x1FFFFF) {
+            let by = code.toString(2).padStart(21, 0)
+            buffer.push([['1110'+ by.slice(0,3)],['10'+by.slice(3,9)],['10'+ by.slice(9,15)],['10'+ by.slice(15,)]])
+          } else if (code>0x1FFFFF && code<=0x3FFFFFF) {
+            let by = code.toString(2).padStart(26, 0)
+            buffer.push([['1110'+ by.slice(0,2)],['10'+by.slice(2,8)],['10'+ by.slice(8,14)],['10'+ by.slice(14,20)], ['10'+ by.slice(20)]])
+          } else if (code>0x3FFFFFF && code<=0x7FFFFFFF) {
+            let by = code.toString(2).padStart(31, 0)
+            buffer.push([['1110'+ by.slice(0,1)],['10'+by.slice(1,7)],['10'+ by.slice(7,13)],['10'+ by.slice(13,19)], ['10'+ by.slice(19,25)], ['10'+ by.slice(25)]])
+          } 
+        }
+        return buffer
+      }
+
+      /**
+       * 方法2
+       * 通过encodeURI()方法
+       */
+      function UTF8_Encoding_URI(str) {
+        let codeList = []
+        for (let i of str) {
+          let codes = encodeURI(i).slice(1).split('%')
+          codeList.push(codes.map(item => parseInt(item, 16)))
+        }
+        console.log('codeList', codeList)
+        return codeList
+      }
+      UTF8_Encoding_URI('中国')
+
+    </script>
+  </body>
+</html>
