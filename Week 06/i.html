@@ -1,0 +1,36 @@
+<html>
+  <head>
+
+  </head>
+  <body>
+    
+    <script>
+      /**
+       * 狗咬人对象设计
+       * 狗咬人这个行为要放到person里，因为根据对象三要素，行为的结果是改变自身对象的状态，
+       * 狗咬人这个动作结果是人被伤害（人的状态被改变），所以这个行为本身是人的行为。
+       */
+      function Dog() {
+        this.legs = 4
+      }
+      function Person(name, gender) {
+        this.name =name
+        this.gender = gender
+        this.hurt = function(damage) {
+          console.log(damage)
+        }
+      }
+
+      /**
+       * JavaScript中特殊的对象
+       */
+      Function
+      Array 
+      String 
+      Math
+      Date
+      JSON
+      
+    </script>
+  </body>
+</html>

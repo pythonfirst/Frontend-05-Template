@@ -6,31 +6,126 @@
     
     <script>
       /**
-       * 狗咬人对象设计
-       * 狗咬人这个行为要放到person里，因为根据对象三要素，行为的结果是改变自身对象的状态，
-       * 狗咬人这个动作结果是人被伤害（人的状态被改变），所以这个行为本身是人的行为。
+       * 原型链继承
        */
-      function Dog() {
-        this.legs = 4
+      function Parent() {
+        this.name = 'zhao'
+        this.instrests = ['game', 'swim']
       }
-      function Person(name, gender) {
-        this.name =name
-        this.gender = gender
-        this.hurt = function(damage) {
-          console.log(damage)
-        }
+
+      Parent.prototype.getName = function () {
+      console.log(this.name)
+      }
+
+      function Child() {
       }
 
       /**
-       * JavaScript中特殊的对象
+       * 原型链继承关键代码 Child.prototype被重写，导致Child.prototype.constructor也被重写，如要修复则需手动指定。
+       * 另外此赋值语句直接造成所有实例共享new Parent()里的引用类型。类似于
+       * let obj = { a: 1 }   
+       * let b = obj //
+       * let c = obj // b与c共享obj
+       */ 
+      Child.prototype = new Parent()
+
+      // Child.prototype.constructor = Child
+    
+
+      /**
+       * 经典继承
        */
-      Function
-      Array 
-      String 
-      Math
-      Date
-      JSON
-      
+       function Parent(name) {
+        this.name = name
+        this.instrests = ['game', 'swim']
+      }
+
+      function Child(name) {
+        Parent.call(this, name) // 关键步骤
+      }
+
+      let child1 = new Child('child1')
+      let child2 = new Child('child2')
+
+      /**
+       * 组合继承
+       */
+       function Parent(name) {
+        this.name = name
+        this.instrests = ['game', 'swim']
+      }
+
+      // 原型链方法
+      Parent.prototype.getName = function() {
+        console.log('name', name)
+        return this.name
+      }
+
+      function Child(name) {
+        Parent.call(this, name) // 构造函数继承方法
+      }
+
+      Child.prototype = new Parent() // 或者为 Child.prototype = Object.create(Parent.prototype)
+
+      Child.prototype.constructor = Child
+
+      let child3 = new Child('child3')
+      let child4 = new Child('child4')
+
+      /**
+       * 原型式继承
+       */
+      function createObj(o) {
+        function F(){}
+        F.prototype = o // 同样造成引用类型共享/覆盖F.prototype.constructor属性
+        return new F()
+      }
+      let parent = new Parent('zhao')
+      let child5 = createObj(parent)
+      let child6 = createObj(parent)
+    
+    
+      /**
+       * 寄生式继承
+       */
+      function createO(o) {
+        let clone = Object.create(o)
+        clone.sayName = function() {
+          console.log('hi')
+        }
+        return clone
+      }
+
+      let person = {
+        name: 'zhao',
+        instrests: ['name', 'hello']
+      }
+
+      /**
+       * 寄生组合式继承
+       */
+      function Parent(name) {
+        this.name = name
+        this.instrests = ['game', 'swim']
+      }
+
+      Parent.prototype.getName = function() {
+        console.log(this.name)
+      }
+
+      function Child(name) {
+        Parent.call(this, name)
+      }
+
+      Child.prototype = Object.create(Parent.prototype)
+
+      Child.prototype.constructor = Child
+
+      // 封装后的函数。
+      function prototype(child, parent) {
+        child.prototype = Object.create(parent.prototype)
+        child.prototype.constructor = child
+      }
     </script>
   </body>
 </html>
