@@ -8,3 +8,5 @@ function NumberToString(num, radix) {
     return number.toString(radix)
   }
 }
+
+NumberToString(100, 2)
