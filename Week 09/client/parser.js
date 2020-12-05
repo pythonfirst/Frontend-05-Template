@@ -2,32 +2,54 @@ const EOF = Symbol('EOF')
 
 let currentToken = null
 let currentAttribute = null
-let stack = [{tokenType: 'document', children: []}]
+let currentTextNode = null
+let stack = [{type: 'document', children: []}]
 function emit(token) {
   console.log(token)
   let top = stack[stack.length-1]
   // 判断是否为开始标签
   if (token.tokenType === 'startTag') {
     let element = {
-      children: []
+      type: 'element',
+      tagName: token.tagName,
+      children: [],
+      attributes: []
     }
 
     for (let p in token) {
-      if (p !== 'type') {
-        element[p] = token[p]
+      if (p !== 'tokenType' && p !== 'tagName' && p !== 'isSelfClosing') {
+        element.attributes.push({
+          name: p,
+          value: token[p]
+        })
       }
     }
 
     if (!token.isSelfClosing) {
       stack.push(element)
+    } else {
+      element.isSelfClosing = true
     }
 
     top.children.push(element)
     element.parent = top
+    currentTextNode = null
   } else if (token.tokenType === 'endTag') {
-    if (token.name === top.name) {  // 结束标签与top标签配对，则出栈
+    currentTextNode = null
+    if (token.tagName === top.tagName) {  // 结束标签与top标签配对，则出栈
       stack.pop()
+    } else {
+      throw Error('缺少标签')
     }
+  } else if (token.tokenType === 'text') {
+    if (currentTextNode === null) {
+      currentTextNode = {
+        type: 'text',
+        content: ''
+      }
+      top.children.push(currentTextNode)
+    }
+    currentTextNode.content += token.content
   }
 }
 // 开始状态
@@ -43,7 +65,7 @@ function data(c) {
     // 文本节点处理
     emit({
       tokenType: 'text',
-      cotent: c
+      content: c
     })
     return data
   }
