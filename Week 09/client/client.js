@@ -78,6 +78,7 @@ class ResponseParser {
 
   receive(string) {
     for (let i=0; i<string.length; i++) {
+      // console.log(i, string.charAt(i))
       this.receiveChar(string.charAt(i))
     }
   }

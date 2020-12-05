@@ -13,8 +13,77 @@ function addRules(text) {
   rules.push(...ast.stylesheet.rules)
 }
 
+/**
+ * 目前只支持tag\id\class
+ * @param {*} element 
+ * @param {*} selector 
+ */
+function match(element, selector) {
+  if (!element.attributes || !selector) { // filter text node
+    return false
+  }
+
+  // id选择器
+  if (selector.charAt(0) === '#') {
+    let attr = element.attributes.filter(attr => attr.name === 'id')[0]
+    if (attr && attr.value === selector.replace('#', '')) {
+      return true
+    }
+  } else if (selector.charAt(0) === '.') {  // class选择器
+    let attr = element.attributes.filter(attr => attr.name === 'class')[0]
+    if (attr && attr.value === selector.replace('.', '')) {
+      return true
+    }
+  } else {  // 标签选择器
+    if (element.tagName === selector) {
+      return true
+    }
+  } 
+  return false
+}
+
+function computeCSS(element) {
+  /**
+   * 获取当前元素的所有父元素 
+   * 使用slice是为了防止后边stack操作对当前stack影响
+   * 使用reverse反转是因为我们要从当前元素到上方查找。
+   */
+  let elements = stack.slice().reverse()
+
+  // 判断是否已经存在计算的样式属性
+  if (!element.computedStyle) {
+    element.computedStyle = {}
+  }
+
+  // 遍历所有rules,检查是否有match的rule
+  for (let rule of rules) {
+    let selectorParts = rule.selectors[0].split(' ').reverse()
+    // 如果当前元素与selectorParts第一个selector不匹配，则继续下一个rule。
+    if (!match(element, selectorParts[0])) {
+      continue
+    }
+
+    let matched = false
+    let j = 1
+    for (let i=0; i<elements.length; i++) {
+      if (match(elements[i], selectorParts[j])) {
+        j++
+      }
+    }
+
+    if (j >= selectorParts.length) {
+      matched = true
+    }
+
+    if (matched) {
+      // 匹配到当前rule
+      console.log('Element', element, 'matched rule', rule)
+    }
+  }
+}
+
 function emit(token) {
-  console.log(token)
+  // console.log(token)
   let top = stack[stack.length-1]
   // 判断是否为开始标签
   if (token.tokenType === 'startTag') {
@@ -33,6 +102,8 @@ function emit(token) {
         })
       }
     }
+
+    computeCSS(element)
 
     if (!token.isSelfClosing) {
       stack.push(element)
