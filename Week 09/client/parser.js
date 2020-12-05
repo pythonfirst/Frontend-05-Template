@@ -1,9 +1,18 @@
 const EOF = Symbol('EOF')
+const css = require('css')
 
 let currentToken = null
 let currentAttribute = null
 let currentTextNode = null
 let stack = [{type: 'document', children: []}]
+let rules = [] // css rules
+
+function addRules(text) {
+  let ast = css.parse(text)  // 构建
+  // console.log(JSON.stringify(ast, null))
+  rules.push(...ast.stylesheet.rules)
+}
+
 function emit(token) {
   console.log(token)
   let top = stack[stack.length-1]
@@ -37,6 +46,9 @@ function emit(token) {
   } else if (token.tokenType === 'endTag') {
     currentTextNode = null
     if (token.tagName === top.tagName) {  // 结束标签与top标签配对，则出栈
+      if (top.tagName === 'style') {
+        addRules(top.children[0].content)
+      }
       stack.pop()
     } else {
       throw Error('缺少标签')
