@@ -14,6 +14,37 @@ function addRules(text) {
 }
 
 /**
+ * 生成specificity四元组
+ * @param {选择器} selector 
+ */
+function specificity(selector) {
+  let p = [0,0,0,0]
+  let selectorParts = selector.split(' ')
+  for (let part of selectorParts) {
+    if (part.charAt(0) === '#') {
+      p[1] +=1
+    } else if (part.charAt(0) === '.') {
+      p[2] +=1
+    } else {
+      p[3] +=1
+    }
+  }
+  return p
+}
+
+function compareSpecificity(sp1, sp2) {
+  if (sp1[0] - sp2[0]) {
+    return sp1[0] - sp2[0]
+  } else if (sp1[1] - sp2[1]) {
+    return sp1[1] - sp2[1]
+  } else if (sp1[2] - sp2[2]) {
+    return sp1[2] - sp2[2]
+  } 
+  return sp1[3] - sp2[3]
+}
+
+
+/**
  * 目前只支持tag\id\class
  * @param {*} element 
  * @param {*} selector 
@@ -74,9 +105,24 @@ function computeCSS(element) {
     if (j >= selectorParts.length) {
       matched = true
     }
-
+    // add css declaration to element computedStyle
     if (matched) {
+      sp = specificity(rule.selectors[0])
       // 匹配到当前rule
+      let computedStyle = element.computedStyle
+      for (let declaration of rule.declarations) {
+        if (!computedStyle[declaration.property]) {
+          computedStyle[declaration.property] = {}
+        }
+        // 给property添加优先级
+        if (!computedStyle[declaration.property].specificity) {
+          computedStyle[declaration.property].value = declaration.value
+          computedStyle[declaration.property].specificity = sp
+        } else if(compareSpecificity(computedStyle[declaration.property].specificity, sp) < 0) {
+          computedStyle[declaration.property].value = declaration.value
+          computedStyle[declaration.property].specificity = sp
+        }
+      }
       console.log('Element', element, 'matched rule', rule)
     }
   }
