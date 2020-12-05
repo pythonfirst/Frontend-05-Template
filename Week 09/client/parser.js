@@ -2,9 +2,33 @@ const EOF = Symbol('EOF')
 
 let currentToken = null
 let currentAttribute = null
-
+let stack = [{tokenType: 'document', children: []}]
 function emit(token) {
   console.log(token)
+  let top = stack[stack.length-1]
+  // 判断是否为开始标签
+  if (token.tokenType === 'startTag') {
+    let element = {
+      children: []
+    }
+
+    for (let p in token) {
+      if (p !== 'type') {
+        element[p] = token[p]
+      }
+    }
+
+    if (!token.isSelfClosing) {
+      stack.push(element)
+    }
+
+    top.children.push(element)
+    element.parent = top
+  } else if (token.tokenType === 'endTag') {
+    if (token.name === top.name) {  // 结束标签与top标签配对，则出栈
+      stack.pop()
+    }
+  }
 }
 // 开始状态
 function data(c) {
@@ -12,13 +36,13 @@ function data(c) {
     return tagOpen
   } else if (c === EOF) {
     emit({
-      type: 'EOF'
+      tokenType: 'EOF'
     })
     return
   } else {
     // 文本节点处理
     emit({
-      type: 'text',
+      tokenType: 'text',
       cotent: c
     })
     return data
@@ -29,7 +53,7 @@ function data(c) {
 function tagOpen(c) {
   if (c.match(/^[a-zA-Z]$/)) {
     currentToken = {
-      type: 'startTag',
+      tokenType: 'startTag',
       tagName: ''
     }
     return tagName(c)
@@ -44,12 +68,11 @@ function tagOpen(c) {
   }
 }
 
-
 // 结束标签
 function endTagOpen(c) {
   if (c.match(/^[a-zA-Z]$/)) {
     currentToken = {
-      type: 'endTag',
+      tokenType: 'endTag',
       tagName: ''
     }
     return tagName(c)
@@ -157,7 +180,7 @@ function afterAttributeName(c) {
   } else if (c === EOF) {
     console.log('eof-in-tag parse error')
     emit({
-      type: 'EOF'
+      tokenType: 'EOF'
     })
   } else {
     currentToken[currentAttribute.name] = currentAttribute.value
@@ -257,8 +280,8 @@ module.exports.parseHTML = function parseHTML(html) {
   let state = data
   console.log('html', html)
   for (let c of html) {
-      state = state(c)
+    state = state(c)
   }
-
+  console.log('stack', stack)
   state = state(EOF)
 }
