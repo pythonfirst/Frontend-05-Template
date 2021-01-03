@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div id="outer" style="background-color:aquamarine; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center;">
+    <div id="inner" style="background-color: antiquewhite; width: 100px; height: 100px;">
+    </div>
+  </div>
+  <script>
+    const outer = document.getElementById('outer')
+    const inner = document.getElementById('inner')
+    outer.addEventListener('click', function() { console.log('outer')})
+    inner.addEventListener('click', function() { console.log('inner')})
+
+    outer.addEventListener('click', function() { console.log('outer capture')}, true)
+    inner.addEventListener('click', function() { console.log('inner default order')})
+    inner.addEventListener('click', function() { console.log('inner capture')}, true)
+    
+  </script>
+</body>
+</html>
